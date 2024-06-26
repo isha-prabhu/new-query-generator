@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="./static/css/styles.css">
+</head>
+
+<body>
+
+    <section class="gradient-background">
+        <div class="container">
+            <h1>Query Builder</h1>
+            <p>Generate insightful prompts for your business needs.</p>
+        </div>
+    </section>
+
+    <section class="main-section">
+        <div class="container form-container">
+            <form id="promptGeneratorForm" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <select id="userRole" name="userRole" class="form-select px-3 me-sm-3 fw-bold">
+                        <option selected>Choose your role</option>
+                        <option>Sales</option>
+                        <option>Finance</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <input class="form-control" id="domainInput" name="domainInput" type="text" placeholder="Domain"
+                        aria-label="default input example">
+                </div>
+                
+                <!-- Upload Model Input -->
+                <div class="input-group mb-4">
+                    <input type="file" class="form-control" id="inputGroupFile02" name="inputGroupFile02" placeholder="Upload your model file (.json)">
+                    <label class="input-group-text" for="inputGroupFile02">Upload Model</label>
+                </div>
+
+                <!-- Secondary Icon Input (Initially Hidden) -->
+                <div id="searchHistoryInputContainer"></div>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-2 justify-content-center py-5">
+                    <button class="btn btn-primary d-inline-flex align-items-center" type="button" onclick="showSearchHistoryInput()">
+                        Few Shot
+                    </button>
+                    <button class="btn btn-outline-secondary d-inline-flex align-items-center" type="button" onclick="generatePrompts('primary')">
+                        Zero Shot
+                    </button>
+                </div>
+
+                <!-- Generate Button (Hidden Initially) -->
+                <div class="d-grid" id="generateButtonContainer" style="display: none;">
+                    <button type="submit" class="btn btn-primary">Generate</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="prompts-section">
+        <div class="container">
+            <div id="promptContainer" class="list-group"></div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+    <script>
+        function generatePrompts(option) {
+            if (option === 'primary') {
+                document.getElementById('promptGeneratorForm').submit();
+            }
+        }
+
+        function showSearchHistoryInput() {
+            const searchHistoryInput = `
+            <div class="input-group mb-4">
+                <input type="file" class="form-control" id="inputGroupFile03" name="inputGroupFile03" placeholder="Upload your search history file (.json)">
+                <label class="input-group-text" for="inputGroupFile03">Upload Search History</label>
+            </div>`;
+            document.getElementById('searchHistoryInputContainer').innerHTML = searchHistoryInput;
+
+            // Show the generate button after showing the search history input
+            document.getElementById('generateButtonContainer').style.display = 'block';
+        }
+
+        document.getElementById('promptGeneratorForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/generate', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Response:', data); // Debug logging
+                    const promptContainer = document.getElementById('promptContainer');
+                    promptContainer.innerHTML = ''; // Clear existing prompts
+
+                    if (data.error) {
+                        promptContainer.innerHTML = `<p class="text-danger">${data.error}</p>`;
+                    } else {
+                        data.forEach(item => {
+                            const promptElement = document.createElement('div');
+                            promptElement.classList.add('list-group-item', 'd-flex', 'gap-2', 'align-items-center', 'prompt-item');
+
+                            const promptText = document.createElement('p');
+                            promptText.textContent = item.prompt;
+                            promptElement.appendChild(promptText);
+
+                            const infoButton = document.createElement('button');
+                            infoButton.classList.add('info-button', 'btn');
+                            infoButton.textContent = 'i';
+                            infoButton.setAttribute('type', 'button');
+                            infoButton.setAttribute('data-bs-toggle', 'tooltip');
+                            infoButton.setAttribute('data-bs-placement', 'right');
+                            infoButton.setAttribute('title', `Attributes: ${item.attributes.join(', ')}`);
+                            promptElement.appendChild(infoButton);
+
+                            promptContainer.appendChild(promptElement);
+                        });
+
+                        const tooltips = new bootstrap.Tooltip(document.body, {
+                            selector: '[data-bs-toggle="tooltip"]',
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+
+</html>

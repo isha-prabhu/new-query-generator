@@ -1,0 +1,12 @@
+[
+    { "query": "total number of interactions by categories by agent name" },
+    { "query": "show evaluation score by agent for April 2024" },
+    { "query": "interactions by intent by containment status" },
+    { "query": "interactions by containment status by month" },
+    { "query": "number of interactions by compliance" },
+    { "query": "list dim pm score" },
+    { "query": "monthly aht and evaluation score by agent" },
+    { "query": "what is average handle time this week" },
+    { "query": "who are the employees with highest sentiment score" },
+    { "query": "evaluation score vs evaluation by agent" }
+]
